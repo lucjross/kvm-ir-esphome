@@ -99,36 +99,6 @@ characters, so `keys: FLASH` means F, L, A, S, H. It is also templatable — see
 the auto-cycle interval in `kvm.yaml`, which builds a variable-length sequence
 at runtime with `keys_from_string()`.
 
-## Two constraints worth knowing
-
-### ESPHome and Home Assistant must be roughly in sync
-
-Keep the ESPHome release used to build this firmware roughly in step with the
-Home Assistant it talks to. The two ship in lockstep and the API version moves
-between them, so a large gap in either direction is unsupported.
-
-`framework: type: esp-idf` is set explicitly in `kvm.yaml` for a related reason:
-current ESPHome defaults ESP32 to esp-idf, but releases before ~2025.8 defaulted
-to Arduino, where this component cannot build.
-
-### No serial console on this board
-
-`logger.hardware_uart` defaults to `USB_CDC` on the ESP32-S2, and that backend
-shares the USB OTG peripheral with the HID device. `kvm.yaml` moves it to `UART0`
-with `baud_rate: 0`.
-
-The QT Py breaks out no UART0 pins (GPIO43/44 aren't on the castellations) and the
-S2 has no USB-Serial-JTAG, so **this device has no serial console at all.** All
-logs come over WiFi:
-
-```bash
-docker run --rm --network host -v "$PWD":/config \
-  ghcr.io/esphome/esphome logs kvm.yaml --device <device-ip>
-```
-
-Recovery from a bad flash is BOOT+RESET into the ROM DFU bootloader, which runs
-before the app and is therefore always available.
-
 ## Building
 
 Nothing needs to be installed locally:
